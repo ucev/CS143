@@ -328,6 +328,8 @@ expression : OBJECTID ASSIGN expression
 	 /*while loop*/
 	 | WHILE expression LOOP expression POOL
 	 { $$ = loop($2, $4);}
+	 | WHILE error
+	 | WHILE expression LOOP error
 	 
 	 /*block expressions*/
 	 | '{' multi_expression '}'
