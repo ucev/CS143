@@ -1,20 +1,20 @@
-
 #ifndef SEMANT_H_
 #define SEMANT_H_
 
 #include <assert.h>
 #include <iostream>
+#include <map>
+#include <set>
+#include <vector>
 #include "cool-tree.h"
 #include "stringtab.h"
 #include "symtab.h"
 #include "list.h"
-#include <map>
-#include <set>
-#include <vector>
-
 
 #define TRUE 1
 #define FALSE 0
+
+using namespace std;
 
 class ClassTable;
 typedef ClassTable *ClassTableP;
@@ -27,28 +27,21 @@ typedef ClassTable *ClassTableP;
 class ClassTable {
 private:
   int semant_errors;
-  bool cycle_found;
-  ostream& error_stream;
 
-  //map from class name to class
-  std::map<Symbol, class__class*> class_map;
-  //map from class name and function name to function
-  std::map<Symbol, std::map<Symbol, method_class*> > method_map;
-  //inheritance map
-  std::map<Symbol, std::set<Symbol> > inherit_graph;
-  //class set
-  std::set<Symbol> basic_class_set;
+  map<Symbol, class__class*> class_map;
+  set<Symbol> basic_class_set;
+  map<Symbol, set<Symbol> > inherit_graph;
+  map<Symbol, map<Symbol, method_class*> > method_map;
+
   void install_basic_classes();
   void install_user_classes(Classes);
   void install_method_map();
-  void check_cycle();
-  void DFS_is_child(std::map<Symbol, int> visited_map, Symbol c, Symbol p, bool &);
-  void DFS_has_cycle(std::map<Symbol, int> visited_map, Symbol c);
+  void verify_signature(class__class*, method_class*);
 
-  void print_inherit_map();
-  void print_class_map();
-  void print_method_map();
-  void fatal();
+  int check_circle();
+  int check_class_circle(class__class*, map<Symbol, int> & depth_map);
+
+  ostream& error_stream;
 
 public:
   ClassTable(Classes);
@@ -56,17 +49,16 @@ public:
   ostream& semant_error();
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
- 
-  bool class_exist(Symbol);
-  bool method_exist(Symbol class_name, Symbol method_name);
-  bool is_child (Symbol c1, Symbol c2);
-  Symbol least_upper_bound(Symbol c1, Symbol c2);
-  class__class * get_parent( Symbol class_name );
-  method_class* get_method ( Symbol class_name, Symbol method_name);
-  std::vector<Symbol> get_signature(Symbol class_name, Symbol method_name);
-  void verify_signature( class__class* cls, method_class* m );
- 
 
+  void fatal();
+
+  class__class * get_parent(Symbol);
+  bool class_exists(Symbol);
+  bool is_child(Symbol, Symbol);
+  bool method_exists(Symbol, Symbol);
+  vector<Symbol> get_signatures(Symbol, Symbol);
+  method_class *get_method(Symbol, Symbol);
+  Symbol least_upper_bound(Symbol, Symbol);
 };
 
 
